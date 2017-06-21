@@ -1,0 +1,74 @@
+import numpy as np
+import re
+import itertools
+from collections import Counter
+
+def clean_str(string):
+    '''
+    Tokenization/string cleaning for all datasets except for SST
+    :param string: string, input data
+    :return: string, clean data
+    '''
+    string = re.sub(r"[^a-zA-Z0-9(),!?\`\']", " ", string)
+    string = re.sub(r"\'s", " \'s", string)
+    string = re.sub(r"\'ve", " \'ve", string)
+    string = re.sub(r"n\'t", " n\'t", string)
+    string = re.sub(r"\'re", " \'re", string)
+    string = re.sub(r"\'d", " \'d", string)
+    string = re.sub(r"\'ll", " \'ll", string)
+    string = re.sub(r",", " , ", string)
+    string = re.sub(r"!", " ! ", string)
+    string = re.sub(r"\(", " \( ", string)
+    string = re.sub(r"\)", " \) ", string)
+    string = re.sub(r"\?", " \? ", string)
+    string = re.sub(r"\s{2,}", " ", string)
+
+    return string.strip().lower()
+
+def load_data_and_labels(positive_data_file, negative_data_file):
+    '''
+    Loads movie review data from files, splits the data into words, and generates labels
+    :param positive_data_file: string, filename
+    :param negative_data_file: string, filename
+    :return: list, split sentences and labels
+    '''
+    # Load data from files
+    positive_examples = list(open(positive_data_file, "r").readlines())
+    positive_examples = [s.strip() for s in positive_examples]
+    negative_examples = list(open(negative_data_file, "r").readlines())
+    negative_examples = [s.strip() for s in negative_examples]
+
+    # Split by words
+    x_text = [clean_str(sent) for sent in positive_examples + negative_examples]
+
+    # Generate labels
+    positive_labels = [[0, 1] for _ in positive_examples]
+    negative_labels = [[1, 0] for _ in negative_examples]
+    y = np.concatenate([positive_labels, negative_labels], 0)
+
+    return [x_text, y]
+
+def batch_iter(data, batch_size, num_epochs, shuffle=True):
+    '''
+    Generates a batch iterator for a dataset
+    :param data: list, input data
+    :param batch_size: int, batch_size
+    :param num_epochs: int, number of epochs
+    :param shuffle: boolean, if shuffle
+    :return: np array, shuffled data
+    '''
+    data = np.array(data)
+    data_size = len(data)
+    num_batches_per_epoch = int((len(data) - 1) / batch_size) + 1
+
+    for epoch in range(num_epochs):
+        if shuffle:
+            shuffle_indices = np.random.permutation(np.range(data_size))
+            shuffled_data = data[shuffle_indices]
+        else:
+            shuffled_data = data
+
+        for batch_num in range(num_batches_per_epoch):
+            start_index = batch_num * batch_size
+            end_index = min((batch_num + 1) * batch_size, data_size)
+            yield shuffled_data[start_index:end_index]
