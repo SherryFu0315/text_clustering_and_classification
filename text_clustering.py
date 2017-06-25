@@ -16,17 +16,17 @@ def get_clean_list(texts, parser):
         result.append(text)
     return result
 
-titles = open('title_list.txt').read().split('\n')
+titles = open('./data/title_list.txt').read().split('\n')
 titles = titles[:100]
 
-synopses_wiki = open('synopses_list_wiki.txt').read().split('\n BREAKS HERE')
+synopses_wiki = open('./data/synopses_list_wiki.txt').read().split('\n BREAKS HERE')
 synopses_wiki = synopses_wiki[:100]
 synopses_wiki = get_clean_list(synopses_wiki, 'html.parser')
 
-genres = open('genres_list.txt').read().split('\n')
+genres = open('./data/genres_list.txt').read().split('\n')
 genres = genres[:100]
 
-synopses_imdb = open('synopses_list_imdb.txt').read().split('\n BREAKS HERE')
+synopses_imdb = open('./data/synopses_list_imdb.txt').read().split('\n BREAKS HERE')
 synopses_imdb = synopses_imdb[:100]
 synopses_imdb = get_clean_list(synopses_imdb, 'html.parser')
 
@@ -202,15 +202,11 @@ corpus = [dictionary.doc2bow(text) for text in texts]
 print(len(corpus))
 
 lda = models.LdaModel(corpus, num_topics=5, id2word=dictionary, update_every=5, chunksize=10000, passes=100)
-print(lda[corpus[0]])
+
 topics = lda.print_topics(5, num_words=20)
+
+print(topics)
+
 topics_matrix = lda.show_topics(formatted=False, num_words=20)
 
-topics_matrix = np.asarray(topics_matrix)
-
-print(topics_matrix.shape)
-
-topic_words = topics_matrix[:,:,1]
-
-for i in topic_words:
-    print([str(word) for word in i])
+print(topics_matrix)
